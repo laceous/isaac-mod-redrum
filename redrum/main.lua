@@ -67,7 +67,7 @@ function mod:onUpdate()
 end
 
 function mod:isRedRoom(roomDesc)
-  return roomDesc.Flags & RoomDescriptor.FLAG_RED_ROOM ~= 0
+  return roomDesc.Flags & RoomDescriptor.FLAG_RED_ROOM == RoomDescriptor.FLAG_RED_ROOM
 end
 
 mod:AddCallback(ModCallbacks.MC_POST_GAME_STARTED, mod.onGameStart)
