@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata>
+    <name>REDRUM</name>
+    <directory>redrum</directory>
+    <id>2722491226</id>
+    <description>This is a silly mod that displays REDЯUM whenever a new red room has been created.
+
+The backwards R doesn't render in the mods menu so it's a normal R. The backwards D doesn't render in-game so it's a normal D.
+
+Blame Stephen King.</description>
+    <version>1.1</version>
+    <visibility>Public</visibility>
+    <tag id="Lua"/>
+    <tag id="Tweaks"/>
+</metadata>
