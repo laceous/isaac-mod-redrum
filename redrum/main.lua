@@ -49,7 +49,9 @@ function mod:onUpdate()
   local rooms = level:GetRooms()
   local roomCount = #rooms -- rooms.Size
   
-  if roomCount > mod.state.roomCount then
+  if roomCount < mod.state.roomCount then
+    mod.state.roomCount = roomCount -- could happen because of glowing hour glass
+  elseif roomCount > mod.state.roomCount then
     local hud = game:GetHUD()
     
     -- only loop over new rooms
