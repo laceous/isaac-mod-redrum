@@ -5,57 +5,68 @@ local game = Game()
 mod.text = 'REDЯUM'
 
 mod.state = {}
-mod.state.roomCount = -1
-mod.state.stageSeed = nil
+mod.state.stageSeeds = {} -- per stage/type
+mod.state.roomCounts = {} -- per stage/type
 
 function mod:onGameStart(isContinue)
   local level = game:GetLevel()
   local seeds = game:GetSeeds()
   local stageSeed = seeds:GetStageSeed(level:GetStage())
-  mod.state.stageSeed = stageSeed
+  mod:setStageSeed(stageSeed)
+  mod:setRoomCount(-1)
   
-  if mod:HasData() then
+  if isContinue and mod:HasData() then
     local _, state = pcall(json.decode, mod:LoadData())
     
     if type(state) == 'table' then
-      if math.type(state.stageSeed) == 'integer' and math.type(state.roomCount) == 'integer' then
+      if type(state.stageSeeds) == 'table' then
         -- quick check to see if this is the same run being continued
-        if state.stageSeed == stageSeed then
-          mod.state.roomCount = state.roomCount
+        if state.stageSeeds[mod:getStageIndex()] == stageSeed then
+          for key, value in pairs(state.stageSeeds) do
+            if type(key) == 'string' and math.type(value) == 'integer' then
+              mod.state.stageSeeds[key] = value
+            end
+          end
+          if type(state.roomCounts) == 'table' then
+            for key, value in pairs(state.roomCounts) do
+              if type(key) == 'string' and math.type(value) == 'integer' then
+                mod.state.roomCounts[key] = value
+              end
+            end
+          end
         end
       end
-    end
-    
-    if not isContinue then
-      mod.state.roomCount = -1
     end
   end
 end
 
 function mod:onGameExit()
   mod:SaveData(json.encode(mod.state))
+  mod:clearStageSeeds()
+  mod:clearRoomCounts()
 end
 
 function mod:onNewLevel()
   local level = game:GetLevel()
   local seeds = game:GetSeeds()
   local stageSeed = seeds:GetStageSeed(level:GetStage())
-  mod.state.stageSeed = stageSeed
-  mod.state.roomCount = -1
+  mod:setStageSeed(stageSeed)
+  mod:setRoomCount(-1)
 end
 
 function mod:onUpdate()
   local level = game:GetLevel()
   local rooms = level:GetRooms()
   local roomCount = #rooms -- rooms.Size
+  local stateRoomCount = mod:getRoomCount()
   
-  if roomCount < mod.state.roomCount then
-    mod.state.roomCount = roomCount -- could happen because of glowing hour glass
-  elseif roomCount > mod.state.roomCount then
+  if roomCount < stateRoomCount then
+    mod:setRoomCount(roomCount) -- could happen because of glowing hour glass
+  elseif roomCount > stateRoomCount then
     local hud = game:GetHUD()
     
     -- only loop over new rooms
-    for i = mod.state.roomCount > 0 and mod.state.roomCount or 0, roomCount - 1 do
+    for i = stateRoomCount > 0 and stateRoomCount or 0, roomCount - 1 do
       local roomDesc = rooms:Get(i)
       
       if mod:isRedRoom(roomDesc) then
@@ -64,12 +75,46 @@ function mod:onUpdate()
       end
     end
     
-    mod.state.roomCount = roomCount
+    mod:setRoomCount(roomCount)
   end
 end
 
 function mod:isRedRoom(roomDesc)
   return roomDesc.Flags & RoomDescriptor.FLAG_RED_ROOM == RoomDescriptor.FLAG_RED_ROOM
+end
+
+function mod:getRoomCount()
+  local roomCount = mod.state.roomCounts[mod:getStageIndex()]
+  return roomCount and roomCount or -1
+end
+
+function mod:setRoomCount(count)
+  mod.state.roomCounts[mod:getStageIndex()] = count
+end
+
+function mod:clearRoomCounts()
+  for key, _ in pairs(mod.state.roomCounts) do
+    mod.state.roomCounts[key] = nil
+  end
+end
+
+function mod:getStageIndex()
+  local level = game:GetLevel()
+  return level:GetStage() .. '-' .. level:GetStageType() .. '-' .. (level:IsAltStage() and 1 or 0) .. '-' .. (level:IsPreAscent() and 1 or 0) .. '-' .. (level:IsAscent() and 1 or 0)
+end
+
+function mod:getStageSeed()
+  return mod.state.stageSeeds[mod:getStageIndex()]
+end
+
+function mod:setStageSeed(seed)
+  mod.state.stageSeeds[mod:getStageIndex()] = seed
+end
+
+function mod:clearStageSeeds()
+  for key, _ in pairs(mod.state.stageSeeds) do
+    mod.state.stageSeeds[key] = nil
+  end
 end
 
 mod:AddCallback(ModCallbacks.MC_POST_GAME_STARTED, mod.onGameStart)
