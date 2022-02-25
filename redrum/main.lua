@@ -5,13 +5,14 @@ local game = Game()
 mod.text = 'REDЯUM'
 
 mod.state = {}
-mod.state.stageSeeds = {} -- per stage/type
+mod.state.stageSeeds = {} -- per stage
 mod.state.roomCounts = {} -- per stage/type
 
 function mod:onGameStart(isContinue)
   local level = game:GetLevel()
+  local stage = level:GetStage()
   local seeds = game:GetSeeds()
-  local stageSeed = seeds:GetStageSeed(level:GetStage())
+  local stageSeed = seeds:GetStageSeed(stage)
   mod:setStageSeed(stageSeed)
   mod:setRoomCount(-1)
   
@@ -21,7 +22,7 @@ function mod:onGameStart(isContinue)
     if type(state) == 'table' then
       if type(state.stageSeeds) == 'table' then
         -- quick check to see if this is the same run being continued
-        if state.stageSeeds[mod:getStageIndex()] == stageSeed then
+        if state.stageSeeds[tostring(stage)] == stageSeed then
           for key, value in pairs(state.stageSeeds) do
             if type(key) == 'string' and math.type(value) == 'integer' then
               mod.state.stageSeeds[key] = value
@@ -109,12 +110,9 @@ function mod:getStageIndex()
   return game:GetVictoryLap() .. '-' .. level:GetStage() .. '-' .. level:GetStageType() .. '-' .. (level:IsAltStage() and 1 or 0) .. '-' .. (level:IsPreAscent() and 1 or 0) .. '-' .. (level:IsAscent() and 1 or 0)
 end
 
-function mod:getStageSeed()
-  return mod.state.stageSeeds[mod:getStageIndex()]
-end
-
 function mod:setStageSeed(seed)
-  mod.state.stageSeeds[mod:getStageIndex()] = seed
+  local level = game:GetLevel()
+  mod.state.stageSeeds[tostring(level:GetStage())] = seed
 end
 
 function mod:clearStageSeeds()
