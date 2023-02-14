@@ -70,7 +70,7 @@ end
 
 function mod:getRoomCount()
   local roomCount = mod.state.roomCounts[mod:getStageIndex()]
-  return roomCount and roomCount or -1
+  return roomCount or -1
 end
 
 function mod:setRoomCount(count)

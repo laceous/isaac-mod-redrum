@@ -8,8 +8,9 @@
 The backwards R doesn't render in the mods menu so it's a normal R. The backwards D doesn't render in-game so it's a normal D.
 
 Blame Stephen King.</description>
-    <version>1.8</version>
+    <version>1.9</version>
     <visibility>Public</visibility>
     <tag id="Lua"/>
+    <tag id="Rooms"/>
     <tag id="Tweaks"/>
 </metadata>
